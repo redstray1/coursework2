@@ -1,11 +1,19 @@
-\documentclass[14pt]{article}
+\documentclass[14pt]{report}
 \usepackage{mathtext}
 \usepackage{bm}
 \usepackage{amssymb}
+\usepackage{xcolor}
 % \usepackage[T2A]{fontenc}
+\usepackage[unicode]{hyperref}
 \usepackage[utf8]{inputenc}
 \usepackage[14pt]{extsizes}
 \usepackage[english, russian]{babel}
+\usepackage{indentfirst}
+\usepackage{wasysym}
+\usepackage{latexsym}
+\definecolor{linkcolor}{rgb}{0.0,0.0,0.0}
+\definecolor{urlcolor}{HTML}{799B03}
+\hypersetup{pdfstartview=FitH, linkcolor=linkcolor,urlcolor=urlcolor, colorlinks=true}
 \usepackage{float}
 \usepackage[
     left=30mm,
@@ -15,24 +23,52 @@
 ]{geometry}
 \usepackage{euscript}
 \usepackage{graphicx}
-\usepackage{amsmath,empheq,amsfonts, subcaption}
+\usepackage{subcaption}
 \usepackage{float}
 \usepackage{listings}
 \usepackage{csquotes}
 \usepackage{mathrsfs}
 \usepackage{amssymb}
 \usepackage{caption}
+\usepackage{titlesec}
 %\usepackage[outputdir=output]{minted}
 \usepackage{minted}
 \graphicspath{ {./images/}{../images/} }
 
+% figure caption type changed
+\captionsetup{labelsep=space}
+\addto\captionsrussian{\renewcommand{\figurename}{Рисунок}}
+% chapter settings
+\titleformat{\chapter}[display]
+{\centering\Large\bfseries}{\chaptertitlename\ \thechapter}{10pt}{\Large}
+\titlespacing*{\chapter}{5pt}{-20pt}{30pt}
+
+% section settings
+\titleformat{\section}[block]
+  {\large\bfseries}
+  {\thesection\ }{0pt}{}
+
+% settings for chapters and sections
+\addto\captionsrussian{% Replace "english" with the language you use
+  \renewcommand{\contentsname}%
+    {\centering \large ОГЛАВЛЕНИЕ}%
+  \renewcommand{\chaptername}{ГЛАВА}
+  \renewcommand{\chaptertitlename}{ГЛАВА}
+  \renewcommand{\bibname}{\large СПИСОК ИСПОЛЬЗОВАННОЙ ЛИТЕРАТУРЫ}
+}
+
+\renewcommand{\baselinestretch}{1.2}
+
 \begin{document}
+
+\chapter{Виды нейронных сетей.}
+
 \section{Детерминированные нейронные сети.}
 
 Сначала напомним, что такое обычные(детерминированные) нейронные сети и как они обучаются.
 
 Основная задача обычных искусственных нейронных сетей($ANN$) в том, чтобы аппроксимировать некоторую зависимость выхода $y$ от
- входа $x$: $y = \Phi(x)$.
+ входа $x$: $y = \Phi(x)$. Зависимость $\Phi(x)$ аппроксимируем через композицию последовательных преобразований.
 
 Для простоты будем рассматривать обычные \textit{полносвязные} сети со входом $x$,
  скрытыми(промежуточными) состояниями слоёв $\bm{h_i}$, функциями активации $a_i(\cdot)$ и выходом $y$:
