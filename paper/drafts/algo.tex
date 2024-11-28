@@ -2,9 +2,11 @@
 \usepackage{mathtext}
 \usepackage{bm}
 \usepackage{amssymb}
-\usepackage[T2A]{fontenc}
+% \usepackage[T2A]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[russian]{babel}
+\usepackage[14pt]{extsizes}
+\usepackage[english, russian]{babel}
+\usepackage{float}
 \usepackage[
     left=30mm,
     top=20mm,
@@ -14,6 +16,14 @@
 \usepackage{euscript}
 \usepackage{graphicx}
 \usepackage{amsmath,empheq,amsfonts, subcaption}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{csquotes}
+\usepackage{mathrsfs}
+\usepackage{amssymb}
+\usepackage{caption}
+%\usepackage[outputdir=output]{minted}
+\usepackage{minted}
 \graphicspath{ {./images/}{../images/} }
 
 \begin{document}
@@ -36,7 +46,7 @@ $$L = \mathcal{L}(\widehat{y}, y),$$ где $\mathcal{L}(\cdot, \cdot)$ - фун
  Такой подход удобен с инженерной точки зрения, поскольку позволяет воспользоваться инструментом автоматического
  дифференцирования, и используется во всех современных фреймоворках: PyTorch, TensorFlow и прочие.
  Граф вычислений является ациклическим ориентированным графом, составленным из вершин-переменных и вершин-операций(Рисунок \ref{fig:image1}).
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=8.5cm]{ANN.png}
     \caption{\textit{Полносвязная} сеть в виде графа вычислений}
@@ -60,7 +70,7 @@ $$L = \mathcal{L}(\widehat{y}, y),$$ где $\mathcal{L}(\cdot, \cdot)$ - фун
 Аналогично для всех остальных параметров модели мы будем проталкивать накопленный с концевой вершины градиент до соответствующих вершин и
  с помощью этого градиента высчитывать градиент по параметрам модели. Схему работы алгоритма обратного распространения ошибки
  можно увидеть на Рисунок~\ref{fig:image2}.
-\begin{figure}[!htb]
+\begin{figure}[H]
     \centering
     \includegraphics[width=8.5cm]{ANN_back_prop.png}
     \caption{Обратное распространение ошибки по графу вычислений детерминированной полносвязной сети}
@@ -72,7 +82,9 @@ $$L = \mathcal{L}(\widehat{y}, y),$$ где $\mathcal{L}(\cdot, \cdot)$ - фун
     \item Переобучение.
     \item Низкая интерпретируемость.
     \item Завышенная/заниженная уверенность модели в предсказаниях, даже если они неверные.
-    \item Низкий уровень откалиброванности моделей.
+    \item Низкий уровень откалиброванности модели.
 \end{itemize}
 
+Указанные проблемы попытаемся решить с помощью байесовского подхода к нейронным сетям, который
+ рассмотрим далее.
 \end{document}
