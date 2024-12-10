@@ -112,7 +112,77 @@ $$\widehat{\theta} = \displaystyle \argmax_{\theta} (\underbrace{\log p(D_y | \t
 
 \section{Вариационный вывод.}
 
-dfsfds
+Теперь попробуем совместить все предыдущие идеи в одну.
+
+Рассмотрим вероятностную модель $p(\underbrace{D_x, D_y}_{\mathcal{D}}, \theta) = p(\theta | D_x, D_y) p(D_x, D_y)$, где $D_x = (x_1, x_2, ..., x_n)$,
+ $D_y = (y_1, y_2, ..., y_n)$, $n \gg 1$, $\theta \in \mathbb{R}^d$
+
+Для получения апостериорного распределения на параметры $\theta$ воспользуемся формулой Байеса:
+
+$$p(\theta | D_x, D_y) = \frac{p(D_x, D_y | \theta) p(\theta)}{p(D_x, D_y)} = \frac{p(D_y) | \theta, D_x) p(\theta)}{p(D_x, D_y)} + const$$
+$$p(\theta | D_x, D_y) = \frac{\sum_{i=1}^n p(y_i | \theta, x_i) p(\theta)}{\int p(D_x, D_y | \widetilde{\theta})p(\widetilde{\theta}) d\widetilde{\theta}} + const$$
+
+Подсчёт истинного апостериора таким способом требует взятие интеграла в знаменателе. В случаях, когда это возможно, проблем нет. Однако в большинстве случаев, которые используются на практике и которые нас интересуют, такой интеграл не берётся.
+
+\subsection{KL-дивергенция и вариационная нижняя оценка.}
+
+Для решения проблемы будем пробовать приблизить апостериорное распределение $p(\theta | D_x, D_y)$ параметризованным распределением $q(\theta | \varphi)$ путём минимизации дивергенции Кульбака-Лейблера $KL(q(\theta | \varphi)\ ||\ p(\theta | D_x, D_y))$.
+ То есть
+$$\widehat{\varphi} = \argmin_{\varphi} KL(q(\theta | \varphi)\ ||\ p(\theta | D_x, D_y))$$.
+Распишем дивергенцию:
+$$KL(q(\theta | \varphi)\ ||\ p(\theta | D_x, D_y))) = \int q(\theta | \phi) \log \frac{q(\theta | \varphi)}{p(\theta | D_x, D_y)} d\theta = \int q(\theta | \varphi) \log q(\theta | \varphi)-$$
+$$-\int q(\theta | \varphi) \log p(\theta | D_x, D_y) = \mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log q(\theta | \varphi)] - \mathbb{E}_{\theta \sim p(\theta | D_x, D_y)}[\log p(\theta | D_x, D_y)]=$$
+$$=\underbrace{\mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log q(\theta | \varphi)] - \mathbb{E}_{\theta \sim p(\theta | D_x, D_y)}[\log p(\theta, D_x, D_y)] }_{-ELBO(\varphi, \mathcal{D})} + \underbrace{\log p(D_x, D_y)}_{const}$$
+
+Тогда получаем следующее:
+$$KL(q(\theta | \varphi)\ ||\ p(\theta | D_x, D_y)) + ELBO(\varphi, \mathcal{D}) = \log p(D_x, D_y)$$
+
+Получившееся значение $ELBO(\varphi, \mathcal{D})$ называется \textit{вариационной нижней оценкой} или \textit{evidence lower bound}. Оно также записывается,
+ как $L(\varphi, \mathcal{D})$.
+
+Свойства вариационной нижней оценки:
+\begin{itemize}
+    \item $\log p(D_x, D_y) \ge L(\varphi, \mathcal{D}) = \mathbb{E}_{\theta \sim q(\theta | \varphi)} [\frac{\log p(\theta, D_x, D_y)}{q(\theta | \varphi)}]$, т.к. дивергенция Кульбака-Лейблера неотрицательна. Данное неравенство верно для любого распределения $q$.
+    \item $L(\varphi, \mathcal{D}) \le 0$, т.к. $\log p(D_x, D_y) \le 0$. Т.е. вариационная нижняя оценка всегда неположительна.
+\end{itemize}
+
+Следовательно, задача о минимизации дивергенции Кульбака-Лейблера по параметрам $\varphi$ эквивалентна задаче о максимизации вариационной нижней оценки по тем же параметрам $\varphi$. Этим
+ фактом мы можем пользоваться, чтобы перейти от предыдущей оптимизационной задаче, которая требовала подсчёта $p(D_x, D_y) = \int p(\theta, D_x, D_y) d\theta$, к
+ задаче, где этого не требуется. Тем самым это упрощает нашу оптимизационную задачу:
+$$\widehat{\varphi} = \argmin_{\varphi} KL(q(\theta | \varphi)\ ||\ p(\theta | D_x, D_y)) = \argmax_{\varphi} L(\varphi, \mathcal{D})$$
+$$\widehat{\varphi} = \argmin_{\varphi} -L(\varphi, \mathcal{D})$$
+Распишем $-L(\varphi, \mathcal{D})$:
+$$-L(\varphi, \mathcal{D}) =  \mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log q(\theta | \varphi)] -
+\mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log p(D_y | \theta, D_x)] - \mathbb{E}_{\theta \sim q(\theta | \varphi)} [p(\theta)] - \log p(D_x)$$
+Теперь попробуем провести аналогию между оптимизационной задачей в предыдущем пункте и новой. Это будет лишь приблизительная аналогия с теоретической точки зрения,
+ однако на практике её всегда можно считать истинной:
+$$\underbrace{\mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log q(\theta | \varphi)]}_{-\mathcal{H}(\varphi)} -
+\underbrace{\mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log p(D_y | \theta, D_x)]}_{-\mathcal{L}_{D_x,D_y}(\varphi)} -
+\underbrace{\mathbb{E}_{\theta \sim q(\theta | \varphi)} [p(\theta)]}_{-\mathcal{R}(\varphi)} - \underbrace{\log p(D_x)}_{-noise}$$
+
+Тогда наша функция потерь переписывается в виде:
+$$-L(\varphi, \mathcal{D}) = \mathcal{L}_{D_x,D_y}(\varphi) + \mathcal{R}(\varphi) + noise - \mathcal{H}(\varphi),$$
+где
+
+$\mathcal{L}_{D_x,D_y}(\varphi)$ --- функция ошибки предсказания модели.
+
+$\mathcal{R}(\varphi)$ --- естественный регуляризатор, получившийся от передачи априорных знаний в модель.
+
+$\mathcal{H}(\varphi)$ --- энтропия Шеннона параметрического распределения $q(\theta | \varphi)$. Чем выше этот параметр, тем более "хаотичным" можно считать
+ Получившееся распредление. Вместе с тем уровень энтропии показывает уровень уверенности в значение параметров нашей модели. Например, значение энтропии Шеннона
+ $\delta$-распределения равно 0.
+
+$noise$ --- шум в данных, от которого нам не избавиться, но он является константой, поэтому из оптимизируемого функционала его можно исключить.
+
+Для решения оптимизационной задачи можно использовать различные методы: методы 1-го порядка(градиентные методы), методы второго порядка(метод Ньютона), генетические и эволюционные алгоритмы. Поскольку мы работаем с большими объёмами данных,
+ как по количеству самих данных, так и по количеству признаков, то самыми эффективными будут градиентные методы.
+
+Тогда посчитаем градиент по $\varphi$:
+$$\nabla_{\varphi} -L(\varphi, \mathcal{D}) = \nabla_{\varphi} \mathcal{L}_{D_x, D_y}(\varphi) + \nabla_{\varphi} \mathcal{R}(\varphi) - \nabla_{\varphi} \mathcal{H}(\varphi)=$$
+$$= -\nabla_{\varphi} \mathbb{E}_{q(\theta | \varphi)}[\log p(D_y | \theta, D_x)] - \nabla_{\varphi} \mathbb{E}_{q(\theta | \varphi)} [\log p(\theta)] +
+\nabla_{\varphi} \mathbb{E}_{q(\theta | \varphi)} [\log q(\theta | \varphi)]=$$
+$$= -\mathbb{E}_{ q(\theta | \varphi)}[\nabla_{\varphi}\log p(D_y | \theta, D_x)] - \mathbb{E}_{q(\theta | \varphi)} [\nabla_{\varphi} \log p(\theta)] +
+\mathbb{E}_{q(\theta | \varphi)} [\nabla_{\varphi} \log q(\theta | \varphi)]$$
 
 \chapter{Виды нейронных сетей.}
 
