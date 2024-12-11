@@ -161,7 +161,7 @@ $$-L(\varphi, \mathcal{D}) =  \mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log
  однако на практике её всегда можно считать истинной:
 $$\underbrace{\mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log q(\theta | \varphi)]}_{-\mathcal{H}(\varphi)} -
 \underbrace{\mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log p(D_y | \theta, D_x)]}_{-\mathcal{L}_{D_x,D_y}(\varphi)} -
-\underbrace{\mathbb{E}_{\theta \sim q(\theta | \varphi)} [p(\theta)]}_{-\mathcal{R}(\varphi)} - \underbrace{\log p(D_x)}_{-noise}$$
+\underbrace{\mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log p(\theta)]}_{-\mathcal{R}(\varphi)} - \underbrace{\log p(D_x)}_{-noise}$$
 
 Тогда наша функция потерь переписывается в виде:
 $$-L(\varphi, \mathcal{D}) = \mathcal{L}_{D_x,D_y}(\varphi) + \mathcal{R}(\varphi) + noise - \mathcal{H}(\varphi),$$
@@ -196,7 +196,7 @@ $$-\nabla_{\varphi} \int q(\theta | \varphi) \log p(D_y | \theta, D_x) d\theta -
 
 Вместо этого попробуем внести дифференцирование под знак интеграла. Это возможно при соблюдении определённых \textit{условий регулярности}, которые мы накладываем на статистическую модель. Такие модели также называются
  \textit{регулярными}\cite{medvedev-stats}. Сначал рассмотрим последний интграл:
-$$\int \frac{\partial}{\partial\varphi} (q(\theta | \varphi) \log q(\theta | \varphi)) = \int \frac{\partial}{\partial\varphi} q(\theta | \varphi) \log q(\theta | \varphi) d\theta\ +\ \int q(\theta | \varphi) \frac{\partial}{\partial\varphi} \log q(\theta | \varphi) d\theta =$$
+$$\int \frac{\partial}{\partial\varphi} (q(\theta | \varphi) \log q(\theta | \varphi)) d\theta = \int \frac{\partial}{\partial\varphi} q(\theta | \varphi) \log q(\theta | \varphi) d\theta\ +\ \int q(\theta | \varphi) \frac{\partial}{\partial\varphi} \log q(\theta | \varphi) d\theta =$$
 $$=\int \frac{\partial}{\partial\varphi} q(\theta | \varphi) \log q(\theta | \varphi) d\theta\ +\ \int \frac{\partial}{\partial\varphi} q(\theta | \varphi) d\theta = \int \frac{\partial}{\partial\varphi} q(\theta | \varphi) \log q(\theta | \varphi) d\theta = $$
 $$=\int q(\theta | \varphi) \frac{1}{q(\theta | \varphi)} \frac{\partial}{\partial\varphi} q(\theta | \varphi) \log q(\theta | \varphi) d\theta = \int q(\theta | \varphi) \frac{\partial(\log q(\theta | \varphi))}{\partial\varphi} \log q(\theta | \varphi) d\theta=$$
 $$=\mathbb{E}_{\theta \sim q(\theta | \varphi)} \Bigl[\frac{\partial(\log q(\theta | \varphi))}{\partial\varphi} \log q(\theta | \varphi)\Bigr]$$
@@ -209,15 +209,15 @@ $$=-\int q(\theta | \varphi) \frac{\partial (\log q(\theta | \varphi))}{\partial
 $$\frac{\partial}{\partial\varphi} (-L(\varphi, \mathcal{D})) = \int q(\theta | \varphi) \frac{\partial \log q(\theta | \varphi)}{\partial\varphi} (\log q(\theta | \varphi) - \log p(D_y | \theta, D_x) - \log p(\theta)) d\theta$$
 Этот интеграл мы не можем посчитать аналитически, поэтому воспользуемся методом Монте-Карло для получения приближенной оценки интеграла\cite{black-box-vi}:
 $$\theta_k \sim q(\theta | \varphi),\ k = \overline{1...K}$$
-$$\grad (-L(\varphi, \mathcal{D})) = \displaystyle \frac{1}{K}\sum_{k=1}^{K} \frac{\partial(\log q(\theta_k | \varphi))}{\partial\varphi} (\log q(\theta_k | \varphi) - \log p(D_y | \theta_k, D_x) - \log p(\theta_k))$$
+$$\grad (-L(\varphi, \mathcal{D})) \approx \displaystyle \frac{1}{K}\sum_{k=1}^{K} \frac{\partial(\log q(\theta_k | \varphi))}{\partial\varphi} (\log q(\theta_k | \varphi) - \log p(D_y | \theta_k, D_x) - \log p(\theta_k))$$
 Однако на практике время сэмплирования $\theta_k$ занимает достаточно много времени, поэтому часто берут $K=1$. Для больших данных мы часто пользуются стохастическим градиентом:
 $$j \sim U[1...N]$$
 $$\theta_k \sim q(\theta | \varphi),\ k = \overline{1...K}$$
-$$\grad (-L(\varphi)) = \displaystyle \frac{1}{K}\sum_{k=1}^K \frac{\partial(\log q(\theta_k | \varphi))}{\partial\varphi} (\log q(\theta_k | \varphi) - N\log p(y_j | \theta_k, x_j) - \log p(\theta_k))$$
+$$\grad (-L(\varphi)) \approx \displaystyle \frac{1}{K}\sum_{k=1}^K \frac{\partial(\log q(\theta_k | \varphi))}{\partial\varphi} (\log q(\theta_k | \varphi) - N\log p(y_j | \theta_k, x_j) - \log p(\theta_k))$$
 Также для нейронных сетей используется пакетный градиентный спуск, чтобы мы могли обрабатывать данные небольшими пакетами. Такой подход уменьшает дисперсию:
 $$i_b \sim U[1...N],\ b = \overline{1...B}$$
 $$\theta_k \sim q(\theta | \varphi),\ k = \overline{1...K}$$
-$$\frac{dL}{\partial\varphi}=\frac{1}{K} \sum_{k=1}^K \Bigl[\frac{\partial(\log q(\theta_k | \varphi))}{\partial\varphi} \bigl(\log q(\theta_k | \varphi) - \frac{N}{B} \sum_{b=1}^B (\log p(y_{i_b} | \theta_k, x_{i_b})) - \log p(\theta_k)\bigr)\Bigr]$$
+$$-\frac{dL}{\partial\varphi}\approx\frac{1}{K} \sum_{k=1}^K \Bigl[\frac{\partial(\log q(\theta_k | \varphi))}{\partial\varphi} \bigl(\log q(\theta_k | \varphi) - \frac{N}{B} \sum_{b=1}^B (\log p(y_{i_b} | \theta_k, x_{i_b})) - \log p(\theta_k)\bigr)\Bigr]$$
 
 Однако данный метод перестаёт работать при $N \gg 1$ и $|\varphi| \gg 1$ из-за очень большой дисперсии градиента.
  Поскольку $\mathbb{E}_{\theta \sim q(\theta | \varphi)} \Bigl[\frac{\partial(\log q(\theta | \varphi))}{\partial \varphi}\Bigr] = 0$,
@@ -230,6 +230,52 @@ $$\frac{dL}{\partial\varphi}=\frac{1}{K} \sum_{k=1}^K \Bigl[\frac{\partial(\log 
 \subsection{Трюк с репараметризацией.}
 
 На замену этому методу был придуман метод, который называется \textit{трюк с репараметризацией} (\textit{reparametrization trick})\cite{auto-encod-bayes}.
+ Предварительно запишем несколько утверждений утверждений:
+
+\begin{proposition}
+    (Law of the unconscious statistician)
+    \label{LOTUS}
+    Пусть $z$ - случайный вектор, $z \sim p(z)$. При этом существует случайный вектор $\varepsilon \sim r(\varepsilon)$ и существует диффеоморфизм $g$: $z = g(\varepsilon)$ такой,
+     что $g(\varepsilon) \sim p(z)$. Тогда
+    $$\forall f -\ измеримая\ функция\ случ.\ величины$$
+    $$\mathbb{E}_{p(z)}[f(z)] = \mathbb{E}_{r(\varepsilon)}[f(g(\varepsilon))]$$
+    $$\int p(z) f(z) dz = \int r(\varepsilon) f(g(\varepsilon)) d\varepsilon$$
+\end{proposition}
+
+Таким образом данное утверждение позволяет заменять одну сэмплируемую величину на другую, сохраняя матожидание. Это свойство
+ применимо для нашей предыдущей опимизационной задаче:
+$$-L(\varphi) = \mathbb{E}_{q(\theta | \varphi)}[\log q(\theta | \varphi)] - \mathbb{E}_{q(\theta | \varphi)}[\log p(D_y | \theta, D_x)] - \mathbb{E}_{q(\theta | \varphi)}[\log p(\theta)]$$
+
+Предположим, что мы можем некоторым способом репараметризовать нашу модель. То есть найти диффеоморфизм $g$: $\theta = g(\varepsilon, \varphi)$, $\varepsilon \sim r(\varepsilon)$.
+ При этом $g(\varepsilon, \varphi) \sim q(\theta | \varphi)$. Тогда, используя \ref{LOTUS} мы можем переписать функцию потерь:
+$$-L(\varphi) = \mathbb{E}_{r(\varepsilon)}[\log q(g(\varepsilon, \varphi) | \varphi)] - \mathbb{E}_{r(\varepsilon)}[\log p(D_y | g(\varepsilon, \varphi), D_x)] - \mathbb{E}_{r(\varepsilon)}[\log p(g(\varepsilon, \varphi))]$$
+В полученной формуле мы добились того, чего хотели раньше --- плотность больше не зависит от оптимизируемых параметров $\varphi$, и следовательно мы можем занести производную под символ матожидания без ошибки:
+$$\frac{\partial}{\partial\varphi} \mathbb{E}_{r(\varepsilon)}[\log q(g(\varepsilon, \varphi) | \varphi)] -
+\frac{\partial}{\partial\varphi}\mathbb{E}_{r(\varepsilon)}[\log p(D_y | g(\varepsilon, \varphi), D_x)] -
+\frac{\partial}{\partial\varphi} \mathbb{E}_{r}[\log p(g(\varepsilon, \varphi))]=$$
+$$=\mathbb{E}_{r(\varepsilon)}\bigl[\frac{\partial}{\partial\varphi} \log q(g(\varepsilon, \varphi) | \varphi)\bigr] -
+\mathbb{E}_{r(\varepsilon)}\bigl[\frac{\partial}{\partial \varphi} \log p(D_y | g(\varepsilon, \varphi), D_x)\bigr] -
+\mathbb{E}_{r(\varepsilon)}\bigl[\frac{\partial}{\partial\varphi} \log p(g(\varepsilon, \varphi))\bigr]$$
+Теперь для получения приближения градиента мы используем метод Монте-Карло для оценки матожиданий:
+$$\varepsilon_k \sim r(\varepsilon),\ k=\overline{1...K}$$
+$$\theta_k = g(\varepsilon_k, \varphi)$$
+$$\frac{\partial (-L(\varphi))}{\partial\varphi} \approx \frac{1}{K} \sum_{k=1}^K \frac{\partial}{\partial\varphi} \log q(\theta_k | \varphi) -
+\frac{\partial}{\partial\varphi} \log p(D_y | \theta_k, D_x) -
+\frac{\partial}{\partial\varphi} \log p(\theta_k)$$
+Аналогично мы можем написать стохастическую оценку на градиент:
+$$\varepsilon_k \sim r(\varepsilon),\ k=\overline{1...K}$$
+$$\theta_k = g(\varepsilon_k, \varphi)$$
+$$j \sim U[1...N]$$
+$$\frac{\partial (-L(\varphi))}{\partial\varphi} \approx \frac{1}{K} \sum_{k=1}^K \frac{\partial}{\partial\varphi} \log q(\theta_k | \varphi) -
+N\frac{\partial}{\partial\varphi} \log p(y_j | \theta_k, x_j) -
+\frac{\partial}{\partial\varphi} \log p(\theta_k)$$
+И пакетный градиент, который чаще используется при обучении моделей для работы с большими данными:
+$$\varepsilon_k \sim r(\varepsilon),\ k=\overline{1...K}$$
+$$\theta_k = g(\varepsilon_k, \varphi)$$
+$$i_b \sim U[1...N],\ b=\overline{1...B}$$
+$$\frac{\partial (-L(\varphi))}{\partial\varphi} \approx \frac{1}{K} \sum_{k=1}^K \Bigl(\frac{\partial}{\partial\varphi} \log q(\theta_k | \varphi) -
+\frac{N}{B}\sum_{b=1}^B \frac{\partial}{\partial\varphi} \log p(y_{i_b} | \theta_k, x_{i_b}) -
+\frac{\partial}{\partial\varphi} \log p(\theta_k)\Bigr)$$
 
 \chapter{Виды нейронных сетей.}
 
