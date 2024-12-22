@@ -421,8 +421,8 @@ $$p(x_1, x_2, ..., x_n) = p(x_1) p(x_2 | x_1) p(x_3 | x_2, x_1) ... p(x_n | x_{n
  добавлению регуляризации к параметрам модели.
 
 \textbf{Замечание.} Кроме того, при обучении байесовских нейронных сетей распределения каких-то параметров могут вырождаться в почти детерминированные распределения.
- Такие случаи означают для нас, что в процессе обучения мы почти наверное уверены в значениях каких-то отдельных параметров. Это позволяет выбросить эти параметры из
- набора сэмплируемых параметров и установить им единственное константное значение. Таким образом мы можем проводить прореживание(sparse) параметров наших сетей. Тут
+ Это позволяет выбросить эти параметры из набора сэмплируемых параметров и установить им единственное константное значение.
+ Таким образом мы можем проводить прореживание(sparse) параметров наших сетей. Тут
  также стоит отметить, что прореживание параметров вовсе не означает, что такие параметры можно полностью выкинуть из обучения. Если
  их зафиксировать и обучить нейронную сеть заново, то итоговое качество упадёт. Это происходит, в частности, из-за стохастической природы наших обучающих методов.
 
@@ -434,7 +434,7 @@ $$b_i \sim p(b_i\ |\ h_{i-1})$$
 $$h_i = W_i \cdot h_{i-1} + b_i$$
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.67\linewidth]{linear_layer_bayes.png}
+    \includegraphics[width=0.7\linewidth]{linear_layer_bayes.png}
     \caption{Вероятностный граф вычислений байесовской нейронной сети.}
     \label{fig:linear_layer_bayes}
 \end{figure}
@@ -452,7 +452,7 @@ $$h_i = W_i \cdot h_{i-1} + b_i$$
  до текущего, он должен пройти сквозь случайную вершину $W_i$ и дойти до $\varphi_W^i$. Такой градиент будет иметь большую дисперсию, поскольку зависит от сэмплируемой величины $W_i$.
 
 Теперь воспользуемся \textit{репараметризационным трюком}, добавив две новые случайные величины $\varepsilon_W \sim r(\varepsilon_W)$, $\varepsilon_b \sim r(\varepsilon_b)$ и их функции преобразования для получения параметров
- $W = g_{\varepsilon_W}(\varepsilon_W)$, $b = g_{\varepsilon_b}(\varepsilon_b)$. Здесь стоит отметить, что $\varepsilon_b$ и $\varepsilon_W$ могут быть из пространств, размерности которых не совпадают с размерностями $W$ и $b$.
+ $W = g_{W}(\varepsilon_W)$, $b = g_{b}(\varepsilon_b)$. Здесь стоит отметить, что $\varepsilon_b$ и $\varepsilon_W$ могут быть из пространств, размерности которых не совпадают с размерностями $W$ и $b$.
  В этом случае граф вычислений преобразуется в такой вид(Рисунок \ref{fig:linear_layer_bayes3}).
 \begin{figure}[H]
     \centering
@@ -463,3 +463,49 @@ $$h_i = W_i \cdot h_{i-1} + b_i$$
 После репараметризации градиент будет беспрепятственно проходить только по детерминированным вершинам и избегать случайных вершин, что сильно улучшает качество процесса обучения.
 
 Следующим шагом требуется алгоритм обучения, который бы позволял использовать идею "цепного правила" для нашей сети.
+
+Предположим, что мы уже получили градиент $\frac{dL}{dh_i}$ со следующего слоя и хотим пересчитать градиенты весов текущего слоя, а также пробросить градиент далев предыдущий слой. Тогда формулы пересчёта градиента будут следующие:в предыдущий слой.
+
+Тогда формулы градиента будут следующие:
+$$\frac{d\mathcal{L}}{d\varphi_W^i} = \frac{d\mathcal{L}}{dh_i} \cdot \frac{dh_i}{dW_i} \cdot \frac{dW_i}{d\varphi_W^i}$$
+$$\frac{d\mathcal{L}}{d\varphi_b^i} = \frac{d\mathcal{L}}{dh_i} \cdot \frac{dh_i}{db_i} \cdot \frac{db_i}{d\varphi_b^i}$$
+$$\frac{d\mathcal{L}}{dh_{i-1}} = \frac{d\mathcal{L}}{dh_i} \cdot \frac{dh_i}{dh_{i-1}}$$
+Однако, помимо градиента по функции ошибки, нам также нужно учесть и другие слагаемые из вариационной нижней оценки $L(\varphi)$. Будем предполагать, что
+ параметры разных слоёв независимы, и тогда
+$$q(\theta\ |\ \varphi) = \prod_i q(\theta_i\ |\ \varphi_i)$$
+$$p(\theta) = \prod_i p(\theta_i)$$
+И тогда формулы для градиента по параметрам распределения будут следующие:
+$$\frac{d(-L)}{d\varphi_W^i} = \frac{d\mathcal{L}}{d\varphi_W^i} - \frac{d(\log p(W_i))}{d\varphi_W^i} + \frac{d(\log q(W_i\ |\ \varphi_W^i))}{d\varphi_W^i}=$$
+$$=\Bigl(\frac{d\mathcal{L}}{dh_i} \cdot \frac{dh_i}{dW_i} - \frac{d(\log p(W_i))}{dW_i} + \frac{d(\log q(W_i\ |\ \varphi_W^i))}{dW_i}\Bigr) \frac{dW_i}{d\varphi_W^i} + \frac{d(\log q(W_i\ |\ \varphi_W^i))}{d\varphi_W^i}$$
+Аналогичную формулу получаем для вектора $b_i$.
+И отдельно алгоритмы прямого хода и обратного хода:
+\begin{algorithm}
+\caption{Прямой ход байесовского линейного слоя.}
+\begin{algorithmic}
+\Procedure{Forward}{$h_{i-1}$}
+    \State $\varepsilon_W \sim r(\varepsilon_W)$
+    \State $\varepsilon_b \sim r(\varepsilon_b)$
+    \State $W_i = g_{W}(\varphi_W^i, \varepsilon_W)$
+    \State $b_i = g_{b}(\varphi_b^i, \varepsilon_b)$
+    \State $Y = W_i \cdot h_{i-1} + b_i$
+    \State \Return{$Y$}
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+\caption{Обратный ход байесовского линейного слоя.}
+\begin{algorithmic}
+\Procedure{Backward}{$h_{i-1}$, $g_o$}
+    \State $g_w^\varepsilon = \frac{d(g_{W}(\varphi_W^i, \varepsilon_W))}{d \varphi_W^i}$
+    \State $g_b^\varepsilon = \frac{d(g_{b}(\varphi_b^i, \varepsilon_b))}{d \varphi_b^i}$
+    \State $g_w = g_o \cdot \frac{dh_i}{dW_i} - \frac{d(\log p(W_i))}{dW_i} + \frac{d(\log q(W_i\ |\ \varphi_W^i))}{dW_i}$
+    \State $g_b = g_o \cdot \frac{dh_i}{db_i} - \frac{d(\log p(b_i))}{db_i} + \frac{d(\log q(b_i\ |\ \varphi_b^i))}{db_i}$
+    \State $g_{\varphi_W^i} = g_w \cdot g_w^\varepsilon + \frac{d(\log q(W_i\ |\ \varphi_W^i))}{d\varphi_W^i}$
+    \State $g_{\varphi_b^i} = g_b \cdot g_b^\varepsilon + \frac{d(\log q(b_i\ |\ \varphi_b^i)}{d\varphi_b^i}$
+    \State $\varphi_W^i = \varphi_W^i - \alpha_W^i g_{\varphi_W^i}$
+    \State $\varphi_b^i = \varphi_b^i - \alpha_b^i g_{\varphi_b^i}$
+    \State $g_i = g_o \cdot \frac{dh_i}{dh_{i-1}}$
+    \State \Return{$g_i$}
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
