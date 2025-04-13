@@ -119,7 +119,7 @@ $$\widehat{\theta} = \displaystyle \argmax_{\theta} (\underbrace{\log p(D_y | \t
 
 Для получения апостериорного распределения на параметры $\theta$ воспользуемся формулой Байеса:
 
-$$p(\theta | D_x, D_y) = \frac{p(D_x, D_y | \theta) p(\theta)}{p(D_x, D_y)} = \frac{p(D_y) | \theta, D_x) p(\theta)}{p(D_x, D_y)} + const$$
+$$p(\theta | D_x, D_y) = \frac{p(D_x, D_y | \theta) p(\theta)}{p(D_x, D_y)} = \frac{p(D_y | \theta, D_x) p(\theta)}{p(D_x, D_y)} + const$$
 $$p(\theta | D_x, D_y) = \frac{\sum_{i=1}^n p(y_i | \theta, x_i) p(\theta)}{\int p(D_x, D_y | \widetilde{\theta})p(\widetilde{\theta}) d\widetilde{\theta}} + const$$
 
 Подсчёт истинного апостериора таким способом требует взятие интеграла в знаменателе. В случаях, когда это возможно, проблем нет. Однако в большинстве случаев, которые используются на практике и которые нас интересуют, такой интеграл не берётся.
@@ -133,7 +133,7 @@ $$\widehat{\varphi} = \argmin_{\varphi} KL(q(\theta | \varphi)\ ||\ p(\theta | D
  и смысла в нашей задаче не было бы. Поэтому требуется найти альтернативный оптимизируемый функционал.
 
 Распишем дивергенцию:
-$$KL(q(\theta | \varphi)\ ||\ p(\theta | D_x, D_y))) = \int q(\theta | \phi) \log \frac{q(\theta | \varphi)}{p(\theta | D_x, D_y)} d\theta = \int q(\theta | \varphi) \log q(\theta | \varphi)-$$
+$$KL(q(\theta | \varphi)\ ||\ p(\theta | D_x, D_y))) = \int q(\theta | \varphi) \log \frac{q(\theta | \varphi)}{p(\theta | D_x, D_y)} d\theta = \int q(\theta | \varphi) \log q(\theta | \varphi)-$$
 $$-\int q(\theta | \varphi) \log p(\theta | D_x, D_y) = \mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log q(\theta | \varphi)] - \mathbb{E}_{\theta \sim q(\theta | \varphi)}[\log p(\theta | D_x, D_y)]=$$
 $$=\underbrace{\mathbb{E}_{\theta \sim q(\theta | \varphi)} [\log q(\theta | \varphi)] - \mathbb{E}_{\theta \sim q(\theta | \varphi)}[\log p(\theta, D_x, D_y)] }_{-ELBO(\varphi, \mathcal{D})} + \underbrace{\log p(D_x, D_y)}_{const}$$
 
@@ -741,7 +741,7 @@ $$\gamma \sim \mathcal{U}(0, 1.5)$$
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{fashionmnist.png}
+    \includegraphics[width=1\linewidth]{fashionmnist1.png}
     \caption{Значение метрики \textit{Accuracy} на \textit{FashionMNIST} во время процесса обучения.}
     \label{fig:fashionmnist}
 \end{figure}
